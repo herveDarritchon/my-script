@@ -1,0 +1,74 @@
+# Constants
+readonly PID_FILE="$HOME/bin/cntlm.pid"
+
+# Functions
+getCntlmInstance() {
+	local instance="$(ps -ef | grep "cntlm" | grep -v "grep" | wc -l)"
+	echo $instance
+}
+
+displayUsage() {
+		echo "Usage : "
+		echo -e "\t-h : help."
+		echo -e "\t-r : run cntlm."
+		echo -e "\t-s : cntlm status."
+		echo -e "\t-q : stop cntlm."
+}
+
+getPidFromPidFile() {
+	local pid=$(cat $PID_FILE)
+	echo $pid
+}
+
+displayMessageToUser() {
+	if [ $# -eq 2 ]; then
+		res=$(getPidFromPidFile)
+		local pid=$?
+		echo "$1 $res"
+	elif [[ $# -eq 1 ]]; then
+		echo "$1"
+	else
+		echo "Usage : displayMessageToUser message [pid]"
+	fi
+}
+
+# Main Program
+if [ $# -eq 0 ]; then
+	displayUsage
+else
+	if [ $1 = "-s" ]; then
+		inst=$(getCntlmInstance)
+		if [ $inst -eq 0 ]; then
+			echo "cntlm is not running on your system."
+		else
+			displayMessageToUser "cntlm already running at pid" "pid"
+		fi
+	fi
+	if [ $1 = "-h" ]; then
+		displayUsage
+	fi
+	if [ $1 = "-q" ]; then
+		inst=$(getCntlmInstance)
+		if [ $inst -ne 0 ]; then
+			pid=$(getPidFromPidFile)
+			kill -15 $pid
+			if [ $? -eq 0 ]; then
+				displayMessageToUser "cntlm stopped with pid $pid"
+			else
+				displayMessageToUser "impossible to stop cntml with pid" "pid"
+			fi
+		else
+			displayMessageToUser "cntlm is not running on your system."
+		fi
+	fi
+	if [ $1 = "-r" ]; then
+		inst=$(getCntlmInstance)
+		if [ $inst -eq 0 ]; then
+			cntlm -P $PID_FILE
+			displayMessageToUser "cntlm launched with pid" "pid"
+		else
+			displayMessageToUser "cntlm already running at pid" "pid"
+		fi
+	fi
+fi
+
