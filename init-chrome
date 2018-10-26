@@ -1,0 +1,36 @@
+#!/bin/sh
+# Patch to Make Chrome Working With Coopnet Internal
+# Author: jeanfrancois.pucheu@orange.com
+# 15/06/2015
+
+CHROME_ORI_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME_NEW_PATH="/Applications/Google Chrome.app/Contents/MacOS/Chrome_bin"
+
+if [ -e "$CHROME_NEW_PATH" ]
+then
+    echo "Chrome Already Patched By !!! "
+    exit 1
+fi
+
+
+if [ -e "$CHROME_ORI_PATH" ]
+then
+    echo "Chrome bin exist .... Countinouing"
+else
+    echo "Chrome not existing or not in the good directory"
+    exit 1
+fi
+
+
+mv "${CHROME_ORI_PATH}" "${CHROME_NEW_PATH}"
+
+echo '#!/bin/sh \nexec "/Applications/Google Chrome.app/Contents/MacOS/Chrome_bin" --args --allow-http-screen-capture' > "${CHROME_ORI_PATH}"
+chmod 775 "${CHROME_ORI_PATH}"
+
+if [ -e "$CHROME_NEW_PATH" ] && [ -e "$CHROME_ORI_PATH" ]
+then
+    echo "Chrome Succesfull Pached for Coopnet !"
+else
+    echo "Chrome Pach for Coopnet  Failed !"
+fi
+

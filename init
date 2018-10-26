@@ -1,0 +1,3 @@
+cp ~/.resources/.gitignore .
+cp ~/.resources/README.md .
+

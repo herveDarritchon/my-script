@@ -1,0 +1,34 @@
+#!/bin/bash -   
+
+# Black        0;30     Dark Gray     1;30
+#Red          0;31     Light Red     1;31
+#Green        0;32     Light Green   1;32
+#Brown/Orange 0;33     Yellow        1;33
+#Blue         0;34     Light Blue    1;34
+#Purple       0;35     Light Purple  1;35
+#Cyan         0;36     Light Cyan    1;36
+#Light Gray   0;37     White         1;37
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+oldIp=$(cat $HOME/bin/.current_ip_address)
+newIp=$(ifconfig | grep "inet 10." | cut -d " " -f2)
+configFile="$HOME/Programmation/Workspaces/Orange/MyShop/conf/myshop-conf-tech.xml"
+temp="$HOME/Programmation/Workspaces/Orange/MyShop/conf/myshop-conf-tech.current"
+sed "s/$oldIp/$newIp/" $configFile > $temp
+if [ -s "$temp" ]
+then 
+	echo "${YELLOW}INFO:${NC} file temp exists and is not empty. Keep going !"
+	rm $HOME/Programmation/Workspaces/Orange/MyShop/conf/myshop-conf-tech.xml
+	mv $HOME/Programmation/Workspaces/Orange/MyShop/conf/myshop-conf-tech.current $HOME/Programmation/Workspaces/Orange/MyShop/conf/myshop-conf-tech.xml
+	echo "Adresse IP de configuration : " $newIp
+	echo $newIp > $HOME/bin/.current_ip_address
+	echo $newIp | pbcopy
+else
+
+	echo "${RED}ERROR:${NC} file temp does not exist, or is empty. Stop !"
+fi
+

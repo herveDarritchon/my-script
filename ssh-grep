@@ -1,0 +1,2 @@
+echo "ssh $1 'grep $2 /var/opt/hosting/log/myshop/$3/myshop-ws.log'"
+ssh $1 'grep $2 /var/opt/hosting/log/myshop/$3/myshop-ws.log'

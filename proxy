@@ -1,31 +1,70 @@
+#!/usr/bin/env bash
+
 # Constants
 readonly PID_FILE="$HOME/bin/cntlm.pid"
+readonly DEBUG_CONST="false"
 
 # Functions
+debug() {
+	if [ $DEBUG_CONST = "true" ]; then
+		echo "$@"
+	fi
+}
+
 getCntlmInstance() {
-	local instance="$(ps -ef | grep "cntlm" | grep -v "grep" | wc -l)"
-	echo $instance
+	local instance
+	instance="$(pgrep "cntlm" | grep -v 'grep' -c)"
+	echo "$instance"
 }
 
 displayUsage() {
 		echo "Usage : "
-		echo -e "\t-h : help."
-		echo -e "\t-r : run cntlm."
-		echo -e "\t-s : cntlm status."
-		echo -e "\t-q : stop cntlm."
+		echo -e "\\t-h : help."
+		echo -e "\\t-l : list env proxy configuration."
+		echo -e "\\t-e : execute cntlm."
+		echo -e "\\t-r : restart cntlm."
+		echo -e "\\t-s : cntlm status."
+		echo -e "\\t-q : stop cntlm."
 }
 
 getPidFromPidFile() {
-	local pid=$(cat $PID_FILE)
-	echo $pid
+	local pid
+	pid=$(cat "$PID_FILE")
+	echo "$pid"
+}
+
+killCntlmProcess() {
+	pid=$(getPidFromPidFile)
+	debug "pid : " "$pid"
+	inst=$(getCntlmInstance)
+	if [ "$inst" -eq 0 ]; then
+		errCode=0;
+		displayMessageToUser "cntlm is not running in your system"
+		rm "$PID_FILE"
+		return 0
+	else
+		displayMessageToUser "cntlm is running on your system with pid \"$pid\""
+		kill -9 "$pid"
+	fi
+	inst=$(getCntlmInstance)
+	debug "inst dans kill : " "$inst"
+	if [ "$inst" -eq 0 ]; then
+		errCode=0;
+		displayMessageToUser "cntlm stopped with pid \"$pid\""
+	else
+		errCode=1
+		displayMessageToUser "impossible to stop cntml with pid" "pid"
+		displayMessageToUser "please try again"
+	fi
+	return "$errCode"
 }
 
 displayMessageToUser() {
-	if [ $# -eq 2 ]; then
+	if [ "$#" -eq 2 ]; then
 		res=$(getPidFromPidFile)
-		local pid=$?
-		echo "$1 $res"
-	elif [[ $# -eq 1 ]]; then
+		local pid="$?"
+		echo "\"$1\" \"$res\""
+	elif [[ "$#" -eq 1 ]]; then
 		echo "$1"
 	else
 		echo "Usage : displayMessageToUser message [pid]"
@@ -33,42 +72,60 @@ displayMessageToUser() {
 }
 
 # Main Program
-if [ $# -eq 0 ]; then
+if [ "$#" -eq 0 ]; then
 	displayUsage
 else
-	if [ $1 = "-s" ]; then
+	if [ "$1" = "-s" ]; then
 		inst=$(getCntlmInstance)
-		if [ $inst -eq 0 ]; then
-			echo "cntlm is not running on your system."
+		if [ "$inst" -eq 0 ]; then
+			displayMessageToUser "cntlm is not running on your system."
 		else
 			displayMessageToUser "cntlm already running at pid" "pid"
 		fi
 	fi
-	if [ $1 = "-h" ]; then
+	if [ "$1" = "-l" ]; then 
+		env | grep -i proxy
+	fi
+	if [ "$1" = "-h" ]; then
 		displayUsage
 	fi
-	if [ $1 = "-q" ]; then
+	if [ "$1" = "-q" ]; then
 		inst=$(getCntlmInstance)
-		if [ $inst -ne 0 ]; then
-			pid=$(getPidFromPidFile)
-			kill -15 $pid
-			if [ $? -eq 0 ]; then
-				displayMessageToUser "cntlm stopped with pid $pid"
-			else
-				displayMessageToUser "impossible to stop cntml with pid" "pid"
-			fi
+		if [ "$inst" -ne 0 ]; then
+			killCntlmProcess
 		else
 			displayMessageToUser "cntlm is not running on your system."
 		fi
 	fi
-	if [ $1 = "-r" ]; then
+
+	if [ "$1" = "-e" ]; then
 		inst=$(getCntlmInstance)
-		if [ $inst -eq 0 ]; then
-			cntlm -P $PID_FILE
+		if [ "$inst" -eq 0 ]; then
+			cntlm -P "$PID_FILE"
 			displayMessageToUser "cntlm launched with pid" "pid"
 		else
 			displayMessageToUser "cntlm already running at pid" "pid"
 		fi
 	fi
-fi
 
+	if [ "$1" = "-r" ]; then
+		inst=$(getCntlmInstance)
+		if [ "$inst" -eq 0 ]; then
+			cntlm -P "$PID_FILE"
+			displayMessageToUser "cntlm launched with pid" "pid"
+		else
+			debug "kill"
+			if killCntlmProcess; then
+				displayMessageToUser "one more try ..."
+				if killCntlmProcess ; then
+					inst=$(getCntlmInstance)
+					debug "inst : " "$inst"
+					cntlm -P "$PID_FILE"
+					displayMessageToUser "cntlm launched with pid" "pid"
+				fi
+			fi
+
+		fi
+	fi
+
+fi

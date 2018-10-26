@@ -1,0 +1,2 @@
+PWD=$(pwd)
+open /Applications/MacDown.app --args $PWD/$1

@@ -1,0 +1,53 @@
+displayUsage() {
+		echo "Usage : "
+		echo -e "\t-h : help."
+		echo -e "\t-b : Swagger basepath directory."
+		echo -e "\t-o : Output directory."
+		echo -e "\t-t : Template directory."
+		echo -e "\t-i : Swagger 2.0 Spec Location."
+		echo -c "\t-c : Clean Output directory."
+}
+
+parseParameters() {
+    echo "parse all the $# parameter from $@"
+    while getopts "hcb:t:o:i:" opt; do
+    echo "parameter $opt is processed"
+        case "$opt" in
+        h|\?)
+            displayUsage
+            exit 0
+            ;;
+        b)  BASE_PATH_DIR=$OPTARG
+            echo "b"
+            ;;
+        o)  OUTPUT_DIR=$OPTARG
+            echo "o"
+            ;;
+        i)  SPEC_LOCATION=$OPTARG
+            echo "i"
+            ;;
+        t)  TEMPLATE_LOCATION=$OPTARG
+            echo "t"
+            ;;
+        c)  clean_before_generate=1
+            echo "c"
+            ;;
+        :)  echo "Utilisation des paramètres par défaut pour $opt."
+            echo ":"
+            ;;
+        ?)  displayUsage
+            exit 3
+            ;;
+        esac
+    done
+}
+
+nbParam=$#
+command=$@
+
+echo "command $command is equivalent to $nbParam parameters."
+
+set -x
+
+parseParameters $@
+

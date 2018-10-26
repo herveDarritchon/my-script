@@ -1,0 +1,3 @@
+#!/bin/sh 
+nohup /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --allow-http-screen-capture 1>~/logs/chrome_exec.log 2>~/logs/chrome_error.log &
+

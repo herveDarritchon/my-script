@@ -1,0 +1,1 @@
+launchctl unload /Library/LaunchAgents/edu.mit.appinventor.aiStarter.plist
