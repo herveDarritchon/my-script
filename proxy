@@ -43,14 +43,14 @@ killCntlmProcess() {
 		rm "$PID_FILE"
 		return 0
 	else
-		displayMessageToUser "cntlm is running on your system with pid \"$pid\""
+		displayMessageToUser "cntlm is running on your system with pid ${pid}"
 		kill -9 "$pid"
 	fi
 	inst=$(getCntlmInstance)
 	debug "inst dans kill : " "$inst"
 	if [ "$inst" -eq 0 ]; then
 		errCode=0;
-		displayMessageToUser "cntlm stopped with pid \"$pid\""
+		displayMessageToUser "cntlm stopped with pid ${pid}"
 	else
 		errCode=1
 		displayMessageToUser "impossible to stop cntml with pid" "pid"
@@ -63,7 +63,7 @@ displayMessageToUser() {
 	if [ "$#" -eq 2 ]; then
 		res=$(getPidFromPidFile)
 		local pid="$?"
-		echo "\"$1\" \"$res\""
+		echo "$1" "$res"
 	elif [[ "$#" -eq 1 ]]; then
 		echo "$1"
 	else
